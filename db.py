@@ -24,7 +24,7 @@ class User(db.Model):
     """
     User model 
 
-    one-to-many relationships with Events table
+    one-to-many relationships with victories table
     """
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -81,6 +81,32 @@ class User(db.Model):
         }
 
 
+class Number(db.Model):
+    """
+    Phone number model
+
+    one-to-one with user
+    """
+    
+    __tablename__ = "numbers"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    number = db.Column(db.Integer, db.ForeignKey("user.id"),  nullable=False)
+
+    def _init_(self, **kwargs):
+        """
+        Initialize Victory object
+        """
+        self.number = kwargs.get("number")
+    
+    def serialize(self):
+        """
+        Serializes Victory object
+        """
+        return {
+            "number": self.number
+        }
+
+
 class Victory(db.Model):
     """
     Victory model 
@@ -88,7 +114,7 @@ class Victory(db.Model):
     many-to-one relationship with user
     """
 
-    __tablename__ = "events"
+    __tablename__ = "victory"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String, nullable=False)
@@ -125,7 +151,7 @@ class Asset(db.Model):
     """
     Asset Model
 
-    Has a one-to-one relationship with Event table
+    Has a one-to-one relationship with Victory table
     """
     __tablename__ = "assets"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -139,7 +165,7 @@ class Asset(db.Model):
         """
         Initializes an Asset object/entry
         """
-        self.event_id = kwargs.get("event_id")
+        self.victory_id = kwargs.get("victory_id")
         self.create(kwargs.get("image_data"))
 
     def serialize(self):
@@ -148,7 +174,7 @@ class Asset(db.Model):
         """
         return f"{self.base_url}/{self.salt}.{self.extension}"
 
-    def event_serialize(self):
+    def victory_serialize(self):
         """
         Serialize Asset object
         """

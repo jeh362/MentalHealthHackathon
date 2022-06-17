@@ -4,6 +4,7 @@ from db import db
 from db import Victory
 from db import User 
 from db import Asset
+from db import Number
 
 import users_dao
 
@@ -150,8 +151,8 @@ def get_all_victories():
     """
     Endpoint for getting all victories
     """
-    # return success_response({"victories": [e.serialize() for e in Event.query.order_by(Event.date.desc())]})
-    return success_response({"victories": [e.serialize() for e in Victory.query.all()]})
+    # return success_response({"victories": [v.serialize() for v in Victory.query.order_by(Victory.date.desc())]})
+    return success_response({"victories": [v.serialize() for v in Victory.query.all()]})
     
 @app.route("/api/users/<int:user_id>/victories/", methods=["POST"])
 def create_victory(user_id):
@@ -180,30 +181,30 @@ def create_victory(user_id):
     db.session.add(image)
     db.session.commit()
     
-    # creates event object 
+    # creates Victory object 
     new_victory = Victory(date=date,description=description, image_id=image.id)
     db.session.add(new_victory)
-    # adds event to user created
-    user.created_events.append(new_victory)
+    # adds Victory to user created
+    user.victories.append(new_victory)
     db.session.commit()
     return success_response(new_victory.serialize(), 201)
 
 @app.route("/api/victories/<int:victory_id>/")
 def get_specific_victory(victory_id):
     """
-    Endpoint for getting a event by id 
+    Endpoint for getting a victory by id 
     """
-    # checks if event exists
+    # checks if victory exists
     victory= Victory.query.filter_by(id=victory_id).first()
     if victory is None:
         return failure_response("Sorry, victory was not found.")
     return success_response(victory.serialize())
            
 
-@app.route("/api/users/<int:user_id>/events/<int:event_id>/", methods=["DELETE"])
+@app.route("/api/users/<int:user_id>/victories/<int:victory_id>/", methods=["DELETE"])
 def delete_victory(user_id,victory_id):
     """
-    Endpoint for deleting an event by id
+    Endpoint for deleting an victory by id
     """
     # checks if user exists
     user = User.query.filter_by(id=user_id).first()
@@ -212,10 +213,10 @@ def delete_victory(user_id,victory_id):
     # checks if victory exists
     victory = Victory.query.filter_by(id=victory_id).first()
     if victory is None:
-        return failure_response("Event not found!")
+        return failure_response("Victory not found!")
     # checks if user created the victory
     if victory not in user.created_victories:
-        return failure_response("User did not create this event!")
+        return failure_response("User did not create this victory!")
     db.session.delete(victory)
     db.session.commit()
     return success_response(victory.serialize())
