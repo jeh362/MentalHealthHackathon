@@ -141,14 +141,14 @@ class Victory(db.Model):
     Victory model 
 
     Many-to-one relationship with User table
-    One-to-many relationship with Asset table
+    One-to-one relationship with Asset table
     """
 
     __tablename__ = "victories"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String, nullable=False)
-    # assets = db.relationship("Asset", cascade="delete")
+    image_data = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=True)
     
     victory_user = db.relationship("User", secondary=user_victories_association_table, back_populates="user_victories")
 
@@ -158,24 +158,29 @@ class Victory(db.Model):
         """
         self.date = kwargs.get("date")
         self.description = kwargs.get("description")
+        self.image_data = kwargs.get("image_data")
         
     def serialize(self):
         """
         Serializes Victory object
         """
+        asset = Asset.query.filter_by(id=self.image_data).first()
         return {
             "id":self.id, 
             "date": self.date,
-            "description": self.description
+            "description": self.description, 
+            "image": asset.serialize()
         }
 
     def simple_serialize(self):
         """
         Simple serializes Victory object
         """
+        asset = Asset.query.filter_by(id=self.image_data).first()
         return {
             "date": self.date,
-            "description": self.description
+            "description": self.description, 
+            "image": asset.serialize()
         }
 
 
@@ -188,7 +193,7 @@ class Asset(db.Model):
     """
     Asset Model
 
-    One-to-many relationship with Victory table
+    One-to-one relationship with Victory table
     """
     __tablename__ = "assets"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -197,7 +202,6 @@ class Asset(db.Model):
     extension =  db.Column(db.String, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
-    # victory_id = db.Column(db.Integer, db.ForeignKey("victory.id"),nullable=False)
 
 
     def __init__(self,**kwargs):
@@ -211,13 +215,10 @@ class Asset(db.Model):
         """
         Serialize Asset object
         """
-        return f"{self.base_url}/{self.salt}.{self.extension}"
+        return {
+            "image": f"{self.base_url}/{self.salt}.{self.extension}"
+        }
 
-    def event_serialize(self):
-        """
-        Serialize Asset object
-        """
-        return f"{self.base_url}/{self.salt}.{self.extension}"
 
     def create(self, image_data):
         """
