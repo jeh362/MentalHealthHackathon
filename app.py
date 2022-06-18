@@ -207,7 +207,7 @@ def create_victory(user_id):
     # adds Victory to user created
     user.user_victories.append(new_victory)
     db.session.commit()
-    return success_response(new_victory.simple_serialize(), 201)
+    return success_response(new_victory.serialize(), 201)
 
 @app.route("/api/users/<int:user_id>/victories/<int:victory_id>/")
 def get_specific_victory(user_id, victory_id):
