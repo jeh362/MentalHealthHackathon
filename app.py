@@ -5,7 +5,7 @@ from db import Victory
 from db import User 
 from db import Number
 
-#import users_dao
+import users_dao
 
 import datetime
 import random
