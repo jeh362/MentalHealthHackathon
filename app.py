@@ -3,10 +3,9 @@ import json
 from db import db
 from db import Victory
 from db import User 
-from db import Asset
 from db import Number
 
-import users_dao
+#import users_dao
 
 import datetime
 import random
@@ -29,7 +28,7 @@ import requests
 # define db filename 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
-db_filename = "bukethaca.db"
+db_filename = "crown.db"
 
 # setup config 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
@@ -57,13 +56,13 @@ def failure_response(message, code=404):
     Generalized failure response function
     """
     return json.dumps({"error": message}), code
-
+"""
 # -- GOOGLE ROUTES ------------------------------------------------------
 @app.route("/api/login/", methods=["POST"])
 def login():
-    """
-    Endpoint for logging a user in with Google and registering new users
-    """
+    
+    #Endpoint for logging a user in with Google and registering new users
+    
     data = json.loads(request.data)
     token = data.get("token")
     try:
@@ -90,9 +89,9 @@ def login():
 
 @app.route("/logout/", methods=["POST"])
 def logout():
-    """
-    ?? Endpoint for logging a user out
-    """
+    
+   # ?? Endpoint for logging a user out
+    
     was_successful, session_token = extract_token(request)
     if not was_successful:
         return session_token
@@ -102,7 +101,7 @@ def logout():
         return failure_response("Invalid session token")
     user.session_expiration = datetime.datetime.now()
     db.session.commit()
-
+"""
 @app.route("/api/users/<int:user_id>/phone/", methods=["POST"])
 def add_number(user_id):
     """
@@ -121,6 +120,24 @@ def add_number(user_id):
 
 
 # -- USER ROUTES ------------------------------------------------------
+@app.route("/api/users/", methods=["POST"])
+def create_user():
+    """
+    Endpoint for creating a user
+
+    this endpoint was used for testing purposes
+    """
+    body = json.loads(request.data)
+    name=body.get("name")
+    email=body.get("email")
+    if name is None:
+        return failure_response("Please enter something for name", 400)
+    if email is None:
+        return failure_response("Please enter something for email", 400)
+    new_user = User(name=name, email=email)
+    db.session.add(new_user)
+    db.session.commit()
+    return success_response(new_user.serialize(), 201)
 
 @app.route("/api/users/<int:user_id>/")
 def get_specific_user(user_id):
@@ -146,13 +163,15 @@ def delete_user(user_id):
 
 
 # -- VICTORY ROUTES ------------------------------------------------------
-@app.route("/api/victories/")
-def get_all_victories():
+@app.route("/api/users/<int:user_id>/victories/")
+def get_all_victories(user_id):
     """
     Endpoint for getting all victories
     """
-    # return success_response({"victories": [v.serialize() for v in Victory.query.order_by(Victory.date.desc())]})
-    return success_response({"victories": [v.serialize() for v in Victory.query.all()]})
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found!")
+    return success_response(user.simple_serialize())
     
 @app.route("/api/users/<int:user_id>/victories/", methods=["POST"])
 def create_victory(user_id):
@@ -172,30 +191,27 @@ def create_victory(user_id):
     description = body.get("description")
     if description is None:
         return failure_response("Please put something for the description", 400) 
-    image_data = body.get("image_data")
-    if image_data is None:
-            return failure_response("No base64 image passed in!", 400)
     
-    # creates image object 
-    image = Asset(image_data=image_data)
-    db.session.add(image)
     db.session.commit()
     
     # creates Victory object 
-    new_victory = Victory(date=date,description=description, image_id=image.id)
+    new_victory = Victory(date=date,description=description)
     db.session.add(new_victory)
     # adds Victory to user created
-    user.victories.append(new_victory)
+    user.user_victories.append(new_victory)
     db.session.commit()
     return success_response(new_victory.serialize(), 201)
 
-@app.route("/api/victories/<int:victory_id>/")
-def get_specific_victory(victory_id):
+@app.route("/api/users/<int:user_id>/victories/<int:victory_id>/")
+def get_specific_victory(user_id, victory_id):
     """
     Endpoint for getting a victory by id 
     """
-    # checks if victory exists
-    victory= Victory.query.filter_by(id=victory_id).first()
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found!")
+
+    victory= User.user_victories.query.filter_by(id=victory_id).first()
     if victory is None:
         return failure_response("Sorry, victory was not found.")
     return success_response(victory.serialize())
@@ -221,6 +237,23 @@ def delete_victory(user_id,victory_id):
     db.session.commit()
     return success_response(victory.serialize())
 
+@app.route("/api/users/<int:user_id>/victories/<int:victory_id>/", methods=["POST"])
+def update_victory(user_id,victory_id):
+    """
+    Endpoint for updating victory
+    """
+    body = json.loads(request.data)
+    user =  User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found!")
+    
+    victory = user.user_victories.query.filter_by(id=victory_id).first()
+    if victory is None:
+        return failure_response("This victory has not been logged!")
+    victory.description = body.get("description", victory.description)
+    
+    db.session.commit()
+    return success_response(victory.serialize())
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
