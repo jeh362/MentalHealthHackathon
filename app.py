@@ -230,7 +230,6 @@ def delete_victory(user_id,victory_id):
     victory = Victory.query.filter_by(id=victory_id).first()
     if victory is None:
         return failure_response("Victory not found!")
-    # checks if user created the victory
     if victory not in user.created_victories:
         return failure_response("User did not create this victory!")
     db.session.delete(victory)
