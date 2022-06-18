@@ -14,6 +14,7 @@ import random
 from flask import Flask
 from flask import request 
 
+
 import requests
 
 import os
@@ -30,6 +31,7 @@ import requests
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 db_filename = "crown.db"
+
 
 # setup config 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///%s" % db_filename
@@ -197,7 +199,7 @@ def create_victory(user_id):
         image = Asset(image_data=image_data)
         db.session.add(image)
         db.session.commit()
-        new_victory = Victory(date=date,description=description, image_id=image.id)
+        new_victory = Victory(date=date,description=description, image_data=image_data)
     else: 
         # creates Victory object 
         new_victory = Victory(date=date,description=description)

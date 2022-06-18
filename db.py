@@ -16,6 +16,7 @@ import string
 import hashlib
 
 from sqlalchemy import ForeignKey
+from app import failure_response
 import bcrypt
 
 db = SQLAlchemy()
@@ -148,14 +149,8 @@ class Victory(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     date = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String, nullable=False)
-<<<<<<< HEAD
-    image_data = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=True)
-    
-=======
-    # assets = db.relationship("Asset", cascade="delete")
     image_id = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=False)
-
->>>>>>> fd1b6b6e02ef08a0561a92738a985c543a83f742
+    
     victory_user = db.relationship("User", secondary=user_victories_association_table, back_populates="user_victories")
 
     def _init_(self, **kwargs):
@@ -164,30 +159,17 @@ class Victory(db.Model):
         """
         self.date = kwargs.get("date")
         self.description = kwargs.get("description")
-<<<<<<< HEAD
-        self.image_data = kwargs.get("image_data")
-        
-=======
         self.image_id = kwargs.get("image_id")
-
->>>>>>> fd1b6b6e02ef08a0561a92738a985c543a83f742
+        
     def serialize(self):
         """
         Serializes Victory object
         """
-<<<<<<< HEAD
-        asset = Asset.query.filter_by(id=self.image_data).first()
-        return {
-            "id":self.id, 
-            "date": self.date,
-            "description": self.description, 
-=======
         asset = Asset.query.filter_by(id=self.image_id).first()
         return {
             "id":self.id, 
             "date": self.date,
-            "description": self.description,
->>>>>>> fd1b6b6e02ef08a0561a92738a985c543a83f742
+            "description": self.description, 
             "image": asset.serialize()
         }
 
@@ -195,7 +177,9 @@ class Victory(db.Model):
         """
         Simple serializes Victory object
         """
-        asset = Asset.query.filter_by(id=self.image_data).first()
+        asset = Asset.query.filter_by(id=self.image_id).first()
+        if asset is None:
+            return failure_response("asset does not exist")
         return {
             "date": self.date,
             "description": self.description, 
@@ -228,7 +212,7 @@ class Asset(db.Model):
         Initializes an Asset object/entry
         """
         self.victory_id = kwargs.get("victory_id")
-        self.create(kwargs.get("image_data"))
+        self.create(kwargs.get("image_id"))
 
     def serialize(self):
         """
