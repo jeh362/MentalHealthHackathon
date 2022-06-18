@@ -149,7 +149,8 @@ class Victory(db.Model):
     date = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String, nullable=False)
     # assets = db.relationship("Asset", cascade="delete")
-    
+    image_id = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=False)
+
     victory_user = db.relationship("User", secondary=user_victories_association_table, back_populates="user_victories")
 
     def _init_(self, **kwargs):
@@ -158,15 +159,18 @@ class Victory(db.Model):
         """
         self.date = kwargs.get("date")
         self.description = kwargs.get("description")
-        
+        self.image_id = kwargs.get("image_id")
+
     def serialize(self):
         """
         Serializes Victory object
         """
+        asset = Asset.query.filter_by(id=self.image_id).first()
         return {
             "id":self.id, 
             "date": self.date,
-            "description": self.description
+            "description": self.description,
+            "image": asset.serialize()
         }
 
     def simple_serialize(self):
