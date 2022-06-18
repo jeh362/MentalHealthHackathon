@@ -138,7 +138,7 @@ def create_user():
     new_user = User(name=name, email=email)
     db.session.add(new_user)
     db.session.commit()
-    return success_response(new_user.serialize(), 201)
+    return success_response(new_user.simple_serialize(), 201)
 
 @app.route("/api/users/<int:user_id>/")
 def get_specific_user(user_id):
