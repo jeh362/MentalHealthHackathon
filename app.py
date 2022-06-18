@@ -102,7 +102,7 @@ def logout():
     user.session_expiration = datetime.datetime.now()
     db.session.commit()
 """
-@app.route("/api/users/<int:user_id>/phone/", methods=["POST"])
+@app.route("/api/users/<int:user_id>/number/", methods=["POST"])
 def add_number(user_id):
     """
     Endpoint for adding phone number to user
@@ -125,7 +125,7 @@ def create_user():
     """
     Endpoint for creating a user
 
-    this endpoint was used for testing purposes
+    *Used for testing purposes*
     """
     body = json.loads(request.data)
     name=body.get("name")
@@ -149,7 +149,7 @@ def get_specific_user(user_id):
         return failure_response("User not found!")
     return success_response(user.serialize())
 
-@app.route("/api/user/<int:user_id>/")
+@app.route("/api/users/<int:user_id>/", methods=["DELETE"])
 def delete_user(user_id):
     """
     Endpoint for deleting a user 
@@ -171,13 +171,12 @@ def get_all_victories(user_id):
     user = User.query.filter_by(id=user_id).first()
     if user is None:
         return failure_response("User not found!")
-    return success_response(user.simple_serialize())
+    return success_response(user.serialize_user_victories())
     
 @app.route("/api/users/<int:user_id>/victories/", methods=["POST"])
 def create_victory(user_id):
     """
-    Endpoint for creating a victory
-
+    Endpoint for creating a victory entry
     """
     # checks if user exists
     user = User.query.filter_by(id=user_id).first()
@@ -191,11 +190,16 @@ def create_victory(user_id):
     description = body.get("description")
     if description is None:
         return failure_response("Please put something for the description", 400) 
-    
-    db.session.commit()
-    
-    # creates Victory object 
-    new_victory = Victory(date=date,description=description)
+    image_data = body.get("image_data")
+    if image_data is not None:
+        # creates Image object 
+        image = Asset(image_data=image_data)
+        db.session.add(image)
+        db.session.commit()
+        new_victory = Victory(date=date,description=description, image_data=image_data)
+    else: 
+        # creates Victory object 
+        new_victory = Victory(date=date,description=description)
     db.session.add(new_victory)
     # adds Victory to user created
     user.user_victories.append(new_victory)
@@ -211,12 +215,13 @@ def get_specific_victory(user_id, victory_id):
     if user is None:
         return failure_response("User not found!")
 
-    victory= User.user_victories.query.filter_by(id=victory_id).first()
-    if victory is None:
-        return failure_response("Sorry, victory was not found.")
-    return success_response(victory.serialize())
+    for victory in user.user_victories:
+        if victory.id == victory_id:
+            if victory is None:
+                return failure_response("Sorry, victory was not found.")
+        return success_response(victory.serialize())    
+    
            
-
 @app.route("/api/users/<int:user_id>/victories/<int:victory_id>/", methods=["DELETE"])
 def delete_victory(user_id,victory_id):
     """
@@ -231,7 +236,7 @@ def delete_victory(user_id,victory_id):
     if victory is None:
         return failure_response("Victory not found!")
     # checks if user created the victory
-    if victory not in user.created_victories:
+    if victory not in user.user_victories:
         return failure_response("User did not create this victory!")
     db.session.delete(victory)
     db.session.commit()
@@ -247,10 +252,11 @@ def update_victory(user_id,victory_id):
     if user is None:
         return failure_response("User not found!")
     
-    victory = user.user_victories.query.filter_by(id=victory_id).first()
-    if victory is None:
-        return failure_response("This victory has not been logged!")
-    victory.description = body.get("description", victory.description)
+    for victory in user.user_victories:
+        if victory.id == victory_id:
+            if victory is None:
+                return failure_response("Sorry, victory was not found.")
+        victory.description = body.get("description", victory.description)
     
     db.session.commit()
     return success_response(victory.serialize())
