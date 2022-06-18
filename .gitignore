@@ -3,3 +3,4 @@
 venv
 crown.db
 __pycache__
+.env

@@ -4,6 +4,7 @@ from db import db
 from db import Victory
 from db import User 
 from db import Number
+from db import Asset
 
 import users_dao
 
