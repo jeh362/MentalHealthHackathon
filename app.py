@@ -197,7 +197,7 @@ def create_victory(user_id):
         image = Asset(image_data=image_data)
         db.session.add(image)
         db.session.commit()
-        new_victory = Victory(date=date,description=description, image_data=image_data)
+        new_victory = Victory(date=date,description=description, image_id=image.id)
     else: 
         # creates Victory object 
         new_victory = Victory(date=date,description=description)
