@@ -141,7 +141,7 @@ class Victory(db.Model):
     Victory model 
 
     Many-to-one relationship with User table
-    One-to-many relationship with Asset table
+    One-to-one relationship with Asset table
     """
 
     __tablename__ = "victories"
@@ -177,9 +177,11 @@ class Victory(db.Model):
         """
         Simple serializes Victory object
         """
+        asset = Asset.query.filter_by(id=self.image_data).first()
         return {
             "date": self.date,
-            "description": self.description
+            "description": self.description, 
+            "image": asset.serialize()
         }
 
 
@@ -192,7 +194,7 @@ class Asset(db.Model):
     """
     Asset Model
 
-    One-to-many relationship with Victory table
+    One-to-one relationship with Victory table
     """
     __tablename__ = "assets"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -201,7 +203,6 @@ class Asset(db.Model):
     extension =  db.Column(db.String, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
-    # victory_id = db.Column(db.Integer, db.ForeignKey("victory.id"),nullable=False)
 
 
     def __init__(self,**kwargs):
@@ -215,13 +216,9 @@ class Asset(db.Model):
         """
         Serialize Asset object
         """
-        return f"{self.base_url}/{self.salt}.{self.extension}"
-
-    def victory_serialize(self):
-        """
-        Serialize Asset object
-        """
-        return f"{self.base_url}/{self.salt}.{self.extension}"
+        return {
+            "image": f"{self.base_url}/{self.salt}.{self.extension}"
+        }
 
     def create(self, image_data):
         """
