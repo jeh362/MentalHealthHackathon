@@ -198,18 +198,13 @@ class Asset(db.Model):
         Initializes an Asset object/entry
         """
         self.victory_id = kwargs.get("victory_id")
-        self.create(kwargs.get("image_id"))
+        self.create(kwargs.get("image_data"))
 
     def serialize(self):
         """
         Serialize Asset object
         """
         return f"{self.base_url}/{self.salt}.{self.extension}"
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> 4324cb0dde2061d09f032c3fed6e7adf7689440e
     def create(self, image_data):
         """
         Given an image in base64 form, it
