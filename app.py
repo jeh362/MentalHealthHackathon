@@ -200,12 +200,13 @@ def create_victory(user_id):
         image = Asset(image_data=image_data)
         db.session.add(image)
         db.session.commit()
-        new_victory = Victory(date=date,description=description, image_data=image_data)
+        # creates Victory object with image
+        new_victory = Victory(date=date,description=description, image_id=image.id)
     else: 
-        # creates Victory object 
+        # creates Victory object without an image
         new_victory = Victory(date=date,description=description)
     db.session.add(new_victory)
-    # adds Victory to user created
+    # adds Victory to user created victories
     user.user_victories.append(new_victory)
     db.session.commit()
     return success_response(new_victory.serialize(), 201)
