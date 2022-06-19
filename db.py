@@ -204,9 +204,7 @@ class Asset(db.Model):
         """
         Serialize Asset object
         """
-        return {
-            "image": f"{self.base_url}/{self.salt}.{self.extension}"
-        }
+        return f"{self.base_url}/{self.salt}.{self.extension}"
 
     def create(self, image_data):
         """
