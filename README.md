@@ -12,5 +12,9 @@ We wanted to create something related to the theme of mental health that was sim
 Kelly Tran kt457@cornell.edu 
 Jacqueline Hui jeh362@cornell.edu
 
+**Frontend Contributors**
+Tiffany Pan tp284@cornell.edu
+Link to frontend repository: https://github.com/tiffany-pann/littlevictories-ios
+
 ![IMG_055F105165AA-1](https://user-images.githubusercontent.com/99925709/174473791-5c90507f-ecb2-4ab2-a2d5-a51038417f95.jpeg)
 
