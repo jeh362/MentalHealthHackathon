@@ -16,7 +16,7 @@ import string
 import hashlib
 
 from sqlalchemy import ForeignKey
-from app import failure_response
+
 import bcrypt
 
 db = SQLAlchemy()
@@ -41,7 +41,7 @@ class User(db.Model):
 
     user_victories = db.relationship("Victory",secondary=user_victories_association_table, back_populates="victory_user")
 
-    """
+    """ 
     # Session information
     session_token = db.Column(db.String, nullable=False, unique=True)
     session_expiration = db.Column(db.DateTime, nullable=False)
@@ -218,10 +218,8 @@ class Asset(db.Model):
         """
         Serialize Asset object
         """
-        return {
-            "image": f"{self.base_url}/{self.salt}.{self.extension}"
-        }
-
+        return f"{self.base_url}/{self.salt}.{self.extension}"
+        
     def create(self, image_data):
         """
         Given an image in base64 form, it
