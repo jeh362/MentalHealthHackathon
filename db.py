@@ -40,13 +40,6 @@ class User(db.Model):
 
     user_victories = db.relationship("Victory",secondary=user_victories_association_table, back_populates="victory_user")
 
-    """
-    # Session information
-    session_token = db.Column(db.String, nullable=False, unique=True)
-    session_expiration = db.Column(db.DateTime, nullable=False)
-    update_token = db.Column(db.String, nullable=False, unique=True)
-    """
-
     def _init_(self, **kwargs):
         """
         Initialize User object/entry
@@ -149,7 +142,7 @@ class Victory(db.Model):
     date = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String, nullable=False)
     # assets = db.relationship("Asset", cascade="delete")
-    image_id = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=False)
+    image_id = db.Column(db.Integer, db.ForeignKey("assets.id"), nullable=True)
 
     victory_user = db.relationship("User", secondary=user_victories_association_table, back_populates="user_victories")
 
@@ -166,24 +159,19 @@ class Victory(db.Model):
         Serializes Victory object
         """
         asset = Asset.query.filter_by(id=self.image_id).first()
-        return {
-            "id":self.id, 
+        if asset is None: 
+            return {
+            "id":self.id,
             "date": self.date,
-            "description": self.description,
-            "image": asset.serialize()
-        }
-
-    def simple_serialize(self):
-        """
-        Simple serializes Victory object
-        """
-        asset = Asset.query.filter_by(id=self.image_data).first()
-        return {
-            "date": self.date,
-            "description": self.description, 
-            "image": asset.serialize()
-        }
-
+            "description": self.description
+            }
+        else: 
+            return {
+                "id":self.id, 
+                "date": self.date,
+                "description": self.description,
+                "image": asset.serialize()
+            }
 
 EXTENSIONS = ["png", "gif", "jpg", "jpeg"]
 BASE_DIR = os.getcwd()
